@@ -31,8 +31,6 @@ if script_mode == 'file':
     except FileNotFoundError:
         print("File name wrong or doesn't exist")
 
-
-
 if script_mode != 'name' and script_mode != 'file':
     print("Error in script mode, input \"name\" or \"file\" ")
 
