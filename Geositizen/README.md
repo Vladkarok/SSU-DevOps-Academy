@@ -4,12 +4,12 @@
 
 **Table of Contents**  
 
-* [Manual installation](#Manual-installation)  
+* [Manual installation](#manual-installation)  
 * [Task](#Task)
-* [Steps for task complition](#Steps-for-task-complition)
-* * [Requirements](#Requirements)
-* [Possible problem in Centos with second network adapter](#Possible-problem-in-Centos-with-second-network-adapter)
-* [Centos: initial system settings and database installing&configuration](#Centos:-initial-system-settings-and-database-installing&configuration)
+* [Steps for task complition](#steps-for-task-complition)
+* * [Requirements](#requirements)
+* [Possible problem in Centos with second network adapter](#possible-problem-in-Centos-with-second-network-adapter)
+* [Centos: initial system settings and database installing&configuration](##centos-initial-system-settings-and-database-installingconfiguration)
 
 ## Manual installation
 ### Task
