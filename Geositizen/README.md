@@ -8,6 +8,8 @@
 * [Task](#Task)
 * [Steps for task complition](#Steps-for-task-complition)
 * * [Requirements](#Requirements)
+* [Possible problem in Centos with second network adapter](#Possible-problem-in-Centos-with-second-network-adapter)
+* [Centos: initial system settings and database installing&configuration](#Centos:-initial-system-settings-and-database-installing&configuration)
 
 ## Manual installation
 ### Task
@@ -32,9 +34,7 @@ For example:
 ![Dhcp server](img/Host_Network_Manager2.jpg?raw=true)
 
 
-
 #### Possible problem in Centos with second network adapter
-
 
 After Centos installation you may face one problem - only one network adapter is working.
 1. Instruct the system to **list your network devices** with the command:
@@ -64,3 +64,4 @@ sudo vi /etc/sysconfig/network-scripts/ifcfg-[network_device_name]
 sudo systemctl restart
 ```
 
+#### Centos: initial system settings and database installing&configuration
