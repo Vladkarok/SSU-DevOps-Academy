@@ -64,4 +64,8 @@ sudo vi /etc/sysconfig/network-scripts/ifcfg-[network_device_name]
 sudo systemctl restart
 ```
 
+<<<<<<< HEAD
 #### Centos: initial system settings and database installing&configuration
+=======
+#### Centos: initial system settings and database installing&configuration
+>>>>>>> 64c1cfb7c1e22beb4f4850135628ce4d5a11785e
