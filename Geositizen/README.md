@@ -23,7 +23,7 @@ We will use Virtualbox (can be downloaded [here](https://www.virtualbox.org/wiki
 For Ubuntu we will use next version - [Ubuntu Server 20.04.3 LTS](https://releases.ubuntu.com/20.04/ubuntu-20.04.3-live-server-amd64.iso.torrent?_ga=2.115100164.244318738.1644355101-915704212.1643474286) and for Centos - [CentOS 7.9.2009](http://ftp.rz.uni-frankfurt.de/pub/mirrors/centos/7.9.2009/isos/x86_64/CentOS-7-x86_64-DVD-2009.torrent) or you can choose another source from Centos [mirrors](http://isoredirect.centos.org/centos/7/isos/x86_64/).
 Donwload images, create two virtual machines. One setting we want to mention - network. As we want our virtual machines to communicate with each other and we need internet for package installing and so on, we have several options, but we recommend the next one: two virtual adapters, one configured as NAT (for internet access, but host and guest machines can't communicate through it) and another - as Host-only Adapter.
 
-![Virtualbox_manual](img/Virtualbox_network_variants.jpg?raw=true "https://www.virtualbox.org/manual/ch06.html")
+![alt text](img/virtualbox_network_variants.jpg?raw=true "https://www.virtualbox.org/manual/ch06.html")
 
 You may check the settings last adapter in Virtualbox menu (File/Host Network Manager) It should be one or more adapters created, must be present ip addresses and DHCP server enabled.
 
@@ -64,8 +64,4 @@ sudo vi /etc/sysconfig/network-scripts/ifcfg-[network_device_name]
 sudo systemctl restart
 ```
 
-<<<<<<< HEAD
 #### Centos: initial system settings and database installing&configuration
-=======
-#### Centos: initial system settings and database installing&configuration
->>>>>>> 64c1cfb7c1e22beb4f4850135628ce4d5a11785e
