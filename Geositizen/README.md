@@ -3,7 +3,6 @@
 ![Main image](img/index.jpg?raw=true)
 
 **Table of Contents**  
-- [Geo citizen](#geo-citizen)
   - [Manual installation](#manual-installation)
     - [Task](#task)
     - [Requirements](#requirements)
