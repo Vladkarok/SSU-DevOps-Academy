@@ -34,7 +34,7 @@ summ=0
  done < $where_to_search
 
  # Printing total number and what we searched
-echo -e "\nTotal number of hitted pattern with $2 is $summ"
+echo -e "\nTotal number of hitted pattern without $2 is $summ"
 
 
 << COMMENT

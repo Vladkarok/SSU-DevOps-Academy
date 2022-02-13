@@ -1,6 +1,6 @@
 #!/bin/bash
 << HOWTOEXECUTE
-./t7.sh /etc/group daemon
+./t5.sh /etc/group daemon
 HOWTOEXECUTE
 
 where_to_search=$1
