@@ -20,6 +20,6 @@ echo "Input time in minutes"
 
 read minutes
 
-files=$(find $directory . -maxdepth 1 -type f -cmin -$minutes)
+files=$(find $directory -maxdepth 1 -type f -cmin -$minutes)
 
 echo -e "\nFiles in $directory that was modified less than $minutes minutes ago are:\n $files"

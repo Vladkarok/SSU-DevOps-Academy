@@ -4,7 +4,7 @@ echo "Введіть форму призвища \"Карпенко\""
 
 read surname
 
-if echo $surname | grep -qE '^Карпенк[оуаи]м?$'
+if echo $surname | grep -qP '^Карпенк[оану]м?(ві)?$'
 
 then
 

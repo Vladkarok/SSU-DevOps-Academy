@@ -1,6 +1,6 @@
 #!/bin/bash
 << HOWTOEXECUTE
-./t4.sh /etc/passwd /bin/bash
+./t4.sh /etc/passwd /bin/bash 1
 HOWTOEXECUTE
 
 where_to_search=$1
