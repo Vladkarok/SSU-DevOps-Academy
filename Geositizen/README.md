@@ -261,6 +261,10 @@ sudo vim /var/lib/pgsql/data/postgresql.conf
 ```
 ![](img/postgres-listen-address.jpg)
 
+> To edit in `vim` press `i` for insert mode  
+> To exit from insert mode (like for save file or exit without saving) press `Esc` button  
+> Type `:` and then `w` - to write changes to file, `q` - for quit from editorm `!` - force, like `q!` - force exit, without *saving* prompt
+
 The last step is to configure the server to accept remote connections by editing the pg_hba.conf file.
 ```bash
 sudo vim /var/lib/pgsql/data/pg_hba.conf
@@ -717,23 +721,21 @@ vim src/main/resources/application.properties
 
 Here we need to change following lines
 
-```
-front.url=http://localhost:8080/citizen/#
-front-end.url=http://localhost:8080/citizen/
-...
-db.url=jdbc:postgresql://localhost:5432/ss_demo_1
-db.username=postgres
-db.password=postgres
-...
-url=jdbc:postgresql://35.204.28.238:5432/ss_demo_1
-username=postgres
-password=postgres
-...
-referenceUrl=jdbc:postgresql://35.204.28.238:5432/ss_demo_1_test
-...
-email.username=ssgeocitizen@gmail.com
-email.password=softserve
-```
+Line number | From | To
+--- | --- | ---
+2 | front.url=http://localhost:8080/citizen/# | front.url=http://**server with tomcat IP address**:8080/citizen/#
+3 | front-end.url=http://localhost:8080/citizen/ | front-end.url=http://**server with tomcat IP address**:8080/citizen/
+6 | db.url=jdbc:postgresql://localhost:5432/ss_demo_1 | db.url=jdbc:postgresql://**server with database IP address**:5432/**database_name**
+7 | db.username=postgres | db.username=**database_user_username**
+8 | db.password=postgres | db.username=**database_user_password**
+15 | url=jdbc:postgresql://35.204.28.238:5432/ss_demo_1 | url=jdbc:postgresql://**server with database IP address**:5432/**database_name**
+16 | username=postgres | username=**database_user_username** 
+17 | password=postgres | username=**database_user_password**
+22 | referenceUrl=jdbc:postgresql://35.204.28.238:5432/ss_demo_1_test | referenceUrl=jdbc:postgresql://**centos_ip_address**:5432/ss_demo_1_test
+35 | email.username=ssgeocitizen@gmail.com | email.username=**your_acc@gmail.com**
+36 | email.password=softserve | email.password=**your_gmail_acc_password**
+
+
 In `front url` section change `localhost` to `server with tomcat IP address` (the server on Ubuntu), in my case it is `192.168.56.105`
 
 In `db` section change `localhost` to `server with database IP address` (the server on Centos with PostgreSQL), in my case it is `192.168.56.106`, `ss_demo_1` to `ss_citizen`.
