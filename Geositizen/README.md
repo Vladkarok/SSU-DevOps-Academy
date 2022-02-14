@@ -933,6 +933,12 @@ vim fix.sh
 
 ```bash
 #!/bin/bash
+# Delete directory if exist
+sudo rm -r ~/Geocit134 || echo "Directory doesn't exist"
+# Clone repo to home
+git clone https://github.com/mentorchita/Geocit134.git ~/Geocit134
+cd ~/Geocit134
+
 ## Repair pom.xml. Use this script in root directory of the project.
 # Fix pom.xml with https on spting repos and javax
 sed -i 's/http:\/\/repo.spring.io\/milestone/https:\/\/repo.spring.io\/milestone/g' pom.xml
@@ -945,8 +951,8 @@ sed -i 's/<\/distributionManagement>$/<\/distributionManagement>-->/g' pom.xml
 ## Repair application.properties
 serverip='192.168.56.105'
 databaseip='192.168.56.106'
-emailname='your_email@gmail.com'
-emailpass='your_password'
+emailname='your@gmail.com'
+emailpass='your_gmail_password'
 dbname='ss_citizen'
 dblogin='softserve'
 dbpass='university'
@@ -955,20 +961,20 @@ sed -i "s/http:\/\/localhost/http:\/\/$serverip/g" src/main/resources/applicatio
 # Change postgres database connection properties
 sed -i "s/postgresql:\/\/localhost/postgresql:\/\/$databaseip/g" src/main/resources/application.properties
 # Change database name
-sed -i "s/(ss_demo_1)$/$dbname/g" src/main/resources/application.properties
+sed -i "s/ss_demo_1$/$dbname/g" src/main/resources/application.properties
 # Change database login
-sed -i "s/db.username=postgres/db.username=$dblogin/g" src/main/resources/application.properties
+sed -i "s/db\.username=postgres/db.username=$dblogin/g" src/main/resources/application.properties
 # Change database password
-sed -i "s/db.password=postgres/db.password=$dbpass/g" src/main/resources/application.properties
+sed -i "s/db\.password=postgres/db.password=$dbpass/g" src/main/resources/application.properties
 # Change liquibase login
-sed -i "s/^(username=postgres)$/username=$dblogin/g" src/main/resources/application.properties
+sed -i "s/^username=postgres$/username=$dblogin/g" src/main/resources/application.properties
 # Change liquibase password
-sed -i "s/^(password=postgres)$/username=$dbpass/g" src/main/resources/application.properties
+sed -i "s/^password=postgres$/username=$dbpass/g" src/main/resources/application.properties
 # Liquibase
-sed -i "s/35.204.28.238/$databaseip/g" src/main/resources/application.properties
+sed -i "s/35\.204\.28\.238/$databaseip/g" src/main/resources/application.properties
 # Change email name for sending messages
-sed -i "s/ssgeocitizen@gmail.com/$emailname/g" src/main/resources/application.properties
-sed -i "s/=softserve/=$emailpass/g" src/main/resources/application.properties
+sed -i "s/ssgeocitizen\@gmail\.com/$emailname/g" src/main/resources/application.properties
+sed -i "s/email.password=softserve/email.password=$emailpass/g" src/main/resources/application.properties
 #--------------------------------------------------------------------------------------------------------
 ## Repair index.html favicon
 sed -i "s/\/src\/assets/\.\/static/g" src/main/webapp/index.html
@@ -978,82 +984,32 @@ sed -i "s/localhost/$serverip/g" src/main/webapp/static/js/app.6313e3379203ca68a
 sed -i "s/localhost/$serverip/g" src/main/webapp/static/js/app.6313e3379203ca68a255.js.map
 sed -i "s/localhost/$serverip/g" src/main/webapp/static/js/vendor.9ad8d2b4b9b02bdd427f.js
 sed -i "s/localhost/$serverip/g" src/main/webapp/static/js/vendor.9ad8d2b4b9b02bdd427f.js.map
+
+#--------------------------------------------------------------------------------------------------------
+mvn install
+warfilename='citizen.war'
+sleep 5
+sudo rm /opt/tomcat/latest/webapps/$warfilename || echo "Tomcat's webapp directory is empty"
+sleep 10
+sudo cp target/$warfilename /opt/tomcat/latest/webapps/
+echo ".war has been copied to Tomcat"
+
+
 ```
 
 > *ATTENTION!*: Change variables according to your setup!
 
-Also we can to automate installing and copying `.war` file to tomcat
 
-```
-touch install_after_fix.sh && chmod +x install_after_fix.sh
-```
-```
-vim install_after_fix.sh
-```
-
-```bash
-#!/bin/bash
-## Use this script in root directory of the project and RUN WITH "sudo"!
-# Maven install
-mvn install
-warfilename='citizen.war'
-sleep 10
-sudo rm /opt/tomcat/latest/webapps/$warfilename || echo "Tomcat's webapp directory is empty"
-sleep 10
-sudo cp target/$warfilename /opt/tomcat/latest/webapps/
-echo ".war is copied to Tomcat"
-
-```
 Save files and exit.
 
 **Script usage example**
-Let's create the "scripts" directory in user's /home
 
-```
-mkdir ~/scripts
-```
-
-And copy these scripts into this directory (you should create these scripts before)
-
-```
-cp fix.sh ~/scripts
-cp install_after_fix.sh ~/scripts
-```
-
-Then change current directory to user's home
-
-```
-cd ~
-```
-
-Remove previous project directory if it exists
-
-```
-sudo rm -r ~/Geocit134 || echo "Directory Geocit 134 doesn't exist"
-```
-
-Clone project from git and change directory
-
-```
-git clone https://github.com/mentorchita/Geocit134.git && cd Geocit134
-```
-
-Copy scripts
-
-```
-cp -r ~/scripts/* ~/Geocit134/
-```
-
-Then execute first script
+Now you can run it like
 
 ```
 ./fix.sh
 ```
 
-And second
-
-```
-./install_after_fix.sh
-```
+It will clone project from Github to users home directory and do all rest stuff for project to work.
 
 Open your browser (*in my case it is http://192.168.56.105/citizen/#/*) and the **Geo citizen** should be working.
