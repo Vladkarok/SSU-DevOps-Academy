@@ -48,7 +48,7 @@ echo -e "\nTotal number of users with $2 is $summ"
 # REGEX IN GREP
 
 ## Assign for variable "list" the result of the command 
-list=$(cat $where_to_search | grep -E "$what_to_search")
+list=$(cat $where_to_search | grep -P "$what_to_search")
 
 ## Reading items from string specified as HERE-STRING at "done" section
 while read line;
