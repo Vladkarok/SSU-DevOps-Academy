@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 # All .txt files
-.txt
+*.txt
+
