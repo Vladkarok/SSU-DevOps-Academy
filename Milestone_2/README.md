@@ -836,6 +836,8 @@ variable "domain_db" {
 
 > **_NOTE!_** Hosting domain in AWS Route53 service costs additional money, 50 cents a month, if you don't want to be charged with extra payments you can comment or delete all `dns.tf` file and use external free domain service (like *cloudflare*) or deal with IP addresses
 
+You can find terraform files in [this](https://github.com/Vladkarok/terraform-geocit-aws) repository.
+
 Now we can execute
 
 ```
@@ -1597,8 +1599,3 @@ and then use these roles in playbook like
     - vladkarok.geo_web
 ```
 
-
-#_______________________________________________________________________  
-https://github.com/b1tsized/vault-tutorial/tree/main/01-getting-started
-
-https://learn.hashicorp.com/tutorials/terraform/secrets-vault?in=terraform/secrets
