@@ -941,7 +941,7 @@ And create new file with following content
 ```
 vim aws_ec2.yml
 ```
-```
+```yml
 plugin: aws_ec2
 aws_profile: ansible
 
@@ -997,7 +997,7 @@ touch ~/ansible/group_vars/db.yml ~/ansible/group_vars/web.yml
 ```
 vim ~/ansible/group_vars/db.yml
 ```
-```
+```yml
 ansible_ssh_private_key_file: ~/.ssh/ss_geocitizen.pem
 ansible_ssh_user: ec2-user
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
@@ -1007,7 +1007,7 @@ save&exit
 ```
 vim ~/ansible/group_vars/web.yml
 ```
-```
+```yml
 ansible_ssh_private_key_file: ~/.ssh/ss_geocitizen.pem
 ansible_ssh_user: ubuntu
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
@@ -1140,7 +1140,7 @@ Open file defaults/main.yml and add data
 ```bash
 vim defaults/main.yml
 ```
-```
+```yml
 ---
 # defaults file for geo_db
 postgres_version: 12
@@ -1151,7 +1151,7 @@ Open file handlers/main.yml and add data
 ```bash
 vim handlers/main.yml
 ```
-```
+```yml
 ---
 # handlers file for geo_db
 - name: restart postgres
@@ -1163,7 +1163,7 @@ Open file tasks/main.yml and add data
 ```bash
 vim tasks/main.yml
 ```
-```
+```yml
 - name: "Upgrade all packages"
   yum:
     name: '*'
@@ -1269,7 +1269,7 @@ Open file defaults/main.yml and add data
 ```bash
 vim defaults/main.yml
 ```
-```
+```yml
 ---
 # defaults file for geo_web
 JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
@@ -1287,7 +1287,7 @@ Open file handlers/main.yml and add data
 ```bash
 vim handlers/main.yml
 ```
-```
+```yml
 ---
 # handlers file for geo_web
 - name: restart tomcat
@@ -1302,7 +1302,7 @@ Open file tasks/main.yml and add data
 ```bash
 vim tasks/main.yml
 ```
-```
+```yml
 ---
 # tasks file for geo_web
 
@@ -1313,7 +1313,7 @@ vim tasks/main.yml
 ```bash
 vim tasks/tomcat-setup-Debian.yml
 ```
-```
+```yml
 - name: update apt cache
   apt:
     upgrade: safe
@@ -1389,7 +1389,7 @@ vim tasks/tomcat-setup-Debian.yml
 ```bash
 vim tasks/app_geo.yml
 ```
-```
+```yml
 - name: "Find out if Geo citizen folder and pom.xml is present"
   stat:
     path: "{{ proj_dir }}/pom.xml"
@@ -1432,7 +1432,7 @@ vim tasks/app_geo.yml
 ```bash
 vim tasks/mvn_build.yml
 ```
-```
+```yml
 - name: stop Tomcat for releasing instance resources
   service: "name={{ item }} state=stopped"
   with_items:
@@ -1455,7 +1455,7 @@ vim tasks/mvn_build.yml
 ```bash
 vim templates/application.properties.j2
 ```
-```
+```json
 #front
 front.url=http://{{ web_domain_name }}:8080/citizen/#
 front-end.url=http://{{ web_domain_name }}:8080/citizen/
@@ -1508,7 +1508,7 @@ Create main playbook in root ansible directory
 ```bash
 cd ~/ansible && vim playbook.yml
 ```
-```
+```yml
 ---
 - name: DB
   hosts: db
@@ -1531,7 +1531,7 @@ We have some sensitive data, like database users, passwords, database name, emai
 vim secret_vars.yml
 ```
 
-```
+```yml
 email_login: YOUR_EMAIL@LOGIN
 email_password: YOUR_EMAIL_PASSWORD
 db_user: DATABASE_USERNAME
@@ -1566,6 +1566,7 @@ Then copy your repo **ssh** link to your repo and run following command
 git remote add origin git@github.com:YOUR_USERNAME/YOUR_REPOSITORY.git
 git branch -m master main
 git branch --set-upstream-to=origin/main main
+git pull
 git add *
 git commit -m "Initial commit for adding Ansible role"
 git push --set-upstream origin main
@@ -1582,7 +1583,7 @@ ansible-galaxy install vladkarok.geo_web
 
 and then use these roles in playbook like
 
-```
+```yml
 ---
 - name: DB
   hosts: db
