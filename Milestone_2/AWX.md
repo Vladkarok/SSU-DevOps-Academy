@@ -6,7 +6,7 @@
     - [Add credentials](#add-credentials)
     - [Add dynamic inventory](#add-dynamic-inventory)
     - [New repository for Project](#new-repository-for-project)
-    - [Set AWX with Roles and Templates](#set-awx-with-roles-and-templates)
+  - [Set AWX with Roles and Templates](#set-awx-with-roles-and-templates)
 
 
 ## Installation  
@@ -125,7 +125,7 @@ git remote add origin git@github.com:YOUR_NAME/REPO_NAME.git
 git push -u origin main
 ```
 
-### Set AWX with Roles and Templates  
+## Set AWX with Roles and Templates  
 
 Go to Resources/Projects and create new project. Select Source Control Credential Type - **Git**, paste your ssh link `git@github.com:YOUR_NAME/REPO_NAME.git` to Source Control URL, specify credentials and you may check *Options* - *Clean*, *Update Revision on Launch*  
 Then you can Sync project to see if everything OK till now.  
