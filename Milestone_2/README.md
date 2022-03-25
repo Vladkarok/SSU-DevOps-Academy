@@ -27,6 +27,18 @@
         - [Create playbook](#create-playbook)
       - [Ansible galaxy roles](#ansible-galaxy-roles)
 
+Related repos:
+- [terraform](https://github.com/Vladkarok/terraform-geocit-aws.git)
+- [jenkins](https://github.com/Vladkarok/jenkins.git)
+- [ansible-galaxy-db](https://github.com/Vladkarok/geo_db.git)
+- [ansible-galaxy-web](https://github.com/Vladkarok/geo_web.git)
+- [awx](https://github.com/Vladkarok/geo-awx.git)
+
+Related runbooks:
+- [AWX](https://github.com/Vladkarok/SSU-DevOps-Academy/blob/main/Milestone_2/AWX.md)
+- [Jenkins](https://github.com/Vladkarok/SSU-DevOps-Academy/blob/main/Milestone_2/Jenkins.md)
+
+
 ## AWS account registration and free tier
 
 Register your account, valid payment method required.  
