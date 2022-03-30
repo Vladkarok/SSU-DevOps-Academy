@@ -71,7 +71,12 @@ Specify name and type (default *Permanent agent*), then you can specify number o
 
 ### Slack integration
 
+Install and configure [Slack integration](https://jenkins.io/doc/book/installing/linux/#slack-integration)
 
+
+### Jira integration
+
+Install and configure [Jira integration](https://jenkins.io/doc/book/installing/linux/#jira-integration)
 
 ### Pipelines
 
@@ -157,3 +162,6 @@ def notifyBuild(String buildStatus = 'STARTED') {
     slackSend (color: colorCode, message: summary)
 }
 ```
+
+> **Note**:CDA21 is Jira issue key. Your can be different.
+
