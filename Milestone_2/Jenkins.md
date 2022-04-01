@@ -10,6 +10,7 @@
     - [Credentials](#credentials)
     - [Manage nodes](#manage-nodes)
     - [Slack integration](#slack-integration)
+    - [Jira integration](#jira-integration)
     - [Pipelines](#pipelines)
 
 ## Install
