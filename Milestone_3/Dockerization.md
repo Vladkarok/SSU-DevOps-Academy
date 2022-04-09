@@ -186,7 +186,7 @@ ${docker_password}
 SOF
 
 ## Perform docker login
-cat password.txt |docker login --username ${docker_username} --password-stdin YOUR_REPO_WITH_PORT
+cat password.txt | docker login --username ${docker_username} --password-stdin YOUR_REPO_WITH_PORT
 
 ## Build and run image using docker-compose
 
@@ -194,6 +194,47 @@ docker-compose up -d
 
 rm password.txt
 ```
+Amazon-Linux-2
+```bash
+#!/bin/bash
+set -ex
+## Update the system
+sudo yum update -y
+
+## Install Docker
+sudo amazon-linux-extras install docker -y
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+
+## Install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+## Create docker-compose.yml
+sudo sh -c 'cat > docker-compose.yml' << SOF
+version: "3.9"
+services:
+  geocit_web:
+    image: YOUR_REPO_WITH_PORT/IMAGE_NAME:TAG
+    restart: always
+    ports:
+      - "8080:8080"
+SOF
+## Create password file for docker login
+sh -c 'cat > password.txt' << SOF
+${docker_password}
+SOF
+
+## Perform docker login
+cat password.txt | docker login --username ${docker_username} --password-stdin YOUR_REPO_WITH_PORT
+
+## Build and run image using docker-compose
+
+docker-compose up -d
+
+rm password.txt
+```
+
 **YOUR_REPO_WITH_PORT** - your repository host with port.  
 **IMAGE_NAME** - name of your image.  
 **TAG** - tag of your image.  
