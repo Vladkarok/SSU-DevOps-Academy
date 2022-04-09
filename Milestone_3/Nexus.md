@@ -6,6 +6,7 @@
   - [Configuration](#configuration)
     - [Nexus](#nexus)
     - [Jenkins](#jenkins)
+  - [ALTERNATIVE Installation (Nexus+Nginx+Certbot(Let's Encrypt) on Docker)](#alternative-installation-nexusnginxcertbotlets-encrypt-on-docker)
 
 
 ## Installation
@@ -312,3 +313,7 @@ If you are interested in curl string, it's an API request, according to Nexus AP
 ![](img/nexus_api.jpg)
 
 Then we copy artifact to the server using general dns name and known username with sertificate. As we need root permissions to access Tomcat's working directory, we provide second command with `sudo` prefix.
+
+## ALTERNATIVE Installation (Nexus+Nginx+Certbot(Let's Encrypt) on Docker)
+
+I've reworked [this](https://github.com/Vladkarok/nexus-nginx-letsencrypt-docker) tutorial (source you can find in parent repository).
