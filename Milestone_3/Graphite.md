@@ -602,7 +602,7 @@ sudo certbot --nginx -d grafana.vladkarok.ml -d www.grafana.vladkarok.ml
 
 Go to “Configuration” and choose “Data Sources”. Then click “Add data source”. By default, Grafana supports Graphite, Prometheus, Open TSDB, and several other aggregators. If the standard plugins are not enough you can download the one you need.  
 Choose “Graphite” and configure data source settings:
-![](img/grafana_data_source.jpg)
+![](img/grafana_data_source.jpg)  
 
-Click on `Save & test` and you should get a success message.
+Click on `Save & test` and you should get a success message.  
 ![](img/working.jpg)
