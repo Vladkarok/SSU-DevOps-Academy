@@ -3,7 +3,25 @@
 - [Graphite](#graphite)
   - [Graphite architecture](#graphite-architecture)
   - [Installation steps](#installation-steps)
+  - [CollectD](#collectd)
+  - [Testing data](#testing-data)
+    - [StatsD](#statsd)
+    - [CollectD](#collectd-1)
+      - [PostgreSQL](#postgresql)
+      - [Nginx](#nginx)
   - [Configuring Grafana Datasources](#configuring-grafana-datasources)
+    - [Graphite](#graphite-1)
+    - [GitHub](#github)
+    - [PostgreSQL](#postgresql-1)
+    - [AWS](#aws)
+  - [Configuring Grafana Dashboards](#configuring-grafana-dashboards)
+    - [Jenkins](#jenkins)
+    - [Carbon](#carbon)
+    - [Collectd](#collectd-2)
+    - [GitHub](#github-1)
+    - [AWS](#aws-1)
+    - [Custom](#custom)
+  - [Alerting to Slack](#alerting-to-slack)
   
 ## Graphite architecture
 
@@ -279,7 +297,7 @@ tail -f /opt/graphite/storage/log/webapp/*.log
 
 **StatsD**
 
-Applications use a collector client to feed device metrics upstream to a Graphite server; typically using [StatsD](https://www.metricfire.com/blog/statsd-what-is-it-and-how-to-monitor-it/) or [CollectD](https://www.metricfire.com/blog/collectd-plugins/). StatsD is an event counter/aggregation service; listening on a UDP port for incoming metrics data it periodically sends aggregated events upstream to a back-end such as Graphite.  
+Applications use a collector client to feed device metrics upstream to a Graphite server; typically using [StatsD](https://www.metricfire.com/blog/statsd-what-is-it-and-how-to-monitor-it/) or [CollectD](https://www.metricfire.com/blog/collectd-plugins/). StatsD is an event counter/aggregation service; listening on a UDP port for incoming metrics data. It periodically sends aggregated events upstream to a back-end such as Graphite.  
 
 Today, [StatsD](https://github.com/statsd/statsd) refers to the original protocol written at Etsy and to the myriad of services that now implement this protocol. 
 
@@ -598,7 +616,466 @@ sudo certbot --nginx -d grafana.vladkarok.ml -d www.grafana.vladkarok.ml
 ```
 > **Note:** You have to change the domain names to match your domain names and have to appropriately configure the A DNS records.
 
+
+## CollectD
+
+Install:
+```bash
+sudo apt install collectd
+```
+
+Configure:
+```bash
+sudo nano /etc/collectd/collectd.conf 
+```
+
+The config is huge.
+You can refer to [Wiki](https://collectd.org/wiki/index.php/Main_Page)
+as well as to [Documentation](https://collectd.org/documentation.shtml)  
+My config:
+```
+Hostname "YOUR HOSTNAME"
+FQDNLookup true
+LoadPlugin syslog
+<Plugin syslog>
+        LogLevel info
+</Plugin>
+LoadPlugin cpu
+LoadPlugin df
+LoadPlugin disk
+LoadPlugin load
+LoadPlugin memory
+LoadPlugin processes
+LoadPlugin uptime
+LoadPlugin users
+LoadPlugin write_graphite
+LoadPlugin network
+#Plugins
+<Plugin cpu>
+        ReportByCpu true
+        ReportByState true
+        ValuesPercentage false
+        ReportNumCpu false
+        ReportGuestState false
+        SubtractGuestState true
+</Plugin>
+<Plugin df>
+        FSType rootfs
+        FSType sysfs
+        FSType proc
+        FSType devtmpfs
+        FSType devpts
+        FSType tmpfs
+        FSType fusectl
+        FSType cgroup
+        IgnoreSelected true
+</Plugin>
+<Plugin load>
+        ReportRelative true
+</Plugin>
+<Plugin memory>
+        ValuesAbsolute true
+        ValuesPercentage false
+</Plugin>
+<Plugin write_graphite>
+       <Node "MYHOSTNAMEFORCOLLECTD">
+                Host "graphite.vladkarok.ml"
+                Port "2003"
+                Protocol "tcp"
+                LogSendErrors true
+                Prefix "collectd."
+                StoreRates true
+                EscapeCharacter "_"
+       </Node>
+</Plugin>
+<Include "/etc/collectd/collectd.conf.d">
+        Filter "*.conf"
+</Include>
+```
+
+## Testing data
+
+### StatsD
+
+StatsD provides many libraries written in different programming languages, which makes it very easy to set up data tracking for any application. A number of [clients](https://github.com/statsd/statsd/blob/master/docs/client_implementations.md) have been made for pushing metrics into StatsD and open sourced by the wider community.
+
+
+![](img/statsd_clients.jpg)
+
+In general, StatsD accepts the following format.
+
+```bash
+echo "metric_name:metric_value|type_specification" | nc -u -w0 127.0.0.1 8125
+```
+
+Metric name and value are self-explanatory; below is a list of the commonly used data types and their applications. These are:
+
++ Gauges
++ Timers
++ Counters
++ Sets
+
+[Gauges](https://github.com/statsd/statsd/blob/master/docs/metric_types.md#gauges) are a constant data type. Best used for instrumentation; an example would be the current load of the system. They are not subject to averaging, and they don’t change unless you directly alter them.
+
+```bash
+echo "demo.gauge:100|g" | nc -u -w0 127.0.0.1 8125
+```
+
+The new stat is accessible under **stats > gauges > demo** with the tree hierarchy on the left-hand side.
+
+![](img/statsd_gauges.jpg)
+
+[Timers](https://github.com/statsd/statsd/blob/master/docs/metric_types.md#timing) measure the duration of a process, crucial for measuring application performance, database calls, render times, etc.
+
+```bash
+echo "demo.timer:250|ms" | nc -u -w0 127.0.0.1 8125
+echo "demo.timer:258|ms" | nc -u -w0 127.0.0.1 8125
+echo "demo.timer:175|ms" | nc -u -w0 127.0.0.1 8125
+```
+
+StatsD will provide us with percentiles, average (mean), standard deviation, sum, lower and upper bounds for the flush interval; vital information for modelling and understanding how a system is behaving in the wild.
+
+![](img/statsd_timers.jpg)
+
+[Counters](https://github.com/statsd/statsd/blob/master/docs/metric_types.md#counting) are the most basic and default type and are used to measure the frequency of an event per minute, for example, failed login attempts. An example on how to count the amount of calls to an endpoint.
+
+```bash
+<metric name>:<value>|c[|@<rate>]
+
+echo "demo.count:1|c" | nc -u -w0 127.0.0.1 8125
+echo "demo.count:1|c" | nc -u -w0 127.0.0.1 8125
+echo "demo.count:1|c" | nc -u -w0 127.0.0.1 8125
+echo "demo.count:1|c" | nc -u -w0 127.0.0.1 8125
+echo "demo.count:1|c" | nc -u -w0 127.0.0.1 8125
+
+```
+
+When viewing the graph, we can observe the average number of events per second during one minute; the count metric shows us the number of occurrences within the flush interval.
+
+![](img/statsd_counters.jpg)
+
+
+[Sets](https://github.com/statsd/statsd/blob/master/docs/metric_types.md#sets) count the number of unique occurrences between flushes. When a metric sends a unique value, an event is counted. For example, it is possible to count the number of users accessing your system as a UID accessing multiple times will only be counted once. By cross-referencing the graph with the commands below, we can see only two recorded values.
+
+
+```bash
+echo "demo.set:100|s" | nc -u -w0 127.0.0.1 8125
+echo "demo.set:100|s" | nc -u -w0 127.0.0.1 8125
+echo "demo.set:100|s" | nc -u -w0 127.0.0.1 8125
+echo "demo.set:8|s" | nc -u -w0 127.0.0.1 8125
+```
+![](img/statsd_sets.jpg)
+
+### CollectD
+
+Plugins from default config:
+
+```bash
+#LoadPlugin logfile
+#LoadPlugin syslog
+#LoadPlugin log_logstash
+#LoadPlugin aggregation
+#LoadPlugin amqp
+#LoadPlugin apache
+#LoadPlugin apcups
+#LoadPlugin ascent
+#LoadPlugin barometer
+#LoadPlugin battery
+#LoadPlugin bind
+#LoadPlugin ceph
+#LoadPlugin cgroups
+#LoadPlugin chrony
+#LoadPlugin conntrack
+#LoadPlugin contextswitch
+#LoadPlugin cpu
+#LoadPlugin cpufreq
+#LoadPlugin cpusleep
+#LoadPlugin csv
+#LoadPlugin curl
+#LoadPlugin curl_json
+#LoadPlugin curl_xml
+#LoadPlugin dbi
+#LoadPlugin df
+#LoadPlugin disk
+#LoadPlugin dns
+#LoadPlugin dpdkevents
+#LoadPlugin dpdkstat
+#LoadPlugin drbd
+#LoadPlugin email
+#LoadPlugin entropy
+#LoadPlugin ethstat
+#LoadPlugin exec
+#LoadPlugin fhcount
+#LoadPlugin filecount
+#LoadPlugin fscache
+#LoadPlugin gmond
+#LoadPlugin gps
+#LoadPlugin hugepages
+#LoadPlugin grpc
+#LoadPlugin hddtemp
+#LoadPlugin intel_rdt
+#LoadPlugin interface
+#LoadPlugin ipc
+#LoadPlugin ipmi
+#LoadPlugin iptables
+#LoadPlugin ipvs
+#LoadPlugin irq
+#LoadPlugin java
+#LoadPlugin load
+#LoadPlugin lua
+#LoadPlugin lvm
+#LoadPlugin madwifi
+#LoadPlugin mbmon
+#LoadPlugin mcelog
+#LoadPlugin md
+#LoadPlugin memcachec
+#LoadPlugin memcached
+#LoadPlugin memory
+#LoadPlugin modbus
+#LoadPlugin mqtt
+#LoadPlugin multimeter
+#LoadPlugin mysql
+#LoadPlugin netlink
+#LoadPlugin network
+#LoadPlugin nfs
+#LoadPlugin nginx
+#LoadPlugin notify_desktop
+#LoadPlugin notify_email
+#LoadPlugin notify_nagios
+#LoadPlugin ntpd
+#LoadPlugin numa
+#LoadPlugin nut
+#LoadPlugin olsrd
+#LoadPlugin onewire
+#LoadPlugin openldap
+#LoadPlugin openvpn
+#LoadPlugin ovs_events
+#LoadPlugin ovs_stats
+#LoadPlugin perl
+#LoadPlugin pinba
+#LoadPlugin ping
+#LoadPlugin postgresql
+#LoadPlugin powerdns
+#LoadPlugin processes
+#LoadPlugin protocols
+#LoadPlugin python
+#LoadPlugin redis
+#LoadPlugin rrdcached
+#LoadPlugin rrdtool
+#LoadPlugin sensors
+#LoadPlugin serial
+#LoadPlugin sigrok
+#LoadPlugin smart
+#LoadPlugin snmp
+#LoadPlugin snmp_agent
+#LoadPlugin statsd
+#LoadPlugin swap
+#LoadPlugin table
+#LoadPlugin tail
+#LoadPlugin tail_csv
+#LoadPlugin tcpconns
+#LoadPlugin teamspeak2
+#LoadPlugin ted
+#LoadPlugin thermal
+#LoadPlugin tokyotyrant
+#LoadPlugin turbostat
+#LoadPlugin unixsock
+#LoadPlugin uptime
+#LoadPlugin users
+#LoadPlugin uuid
+#LoadPlugin varnish
+#LoadPlugin virt
+#LoadPlugin vmem
+#LoadPlugin vserver
+#LoadPlugin wireless
+#LoadPlugin write_graphite
+#LoadPlugin write_http
+#LoadPlugin write_kafka
+#LoadPlugin write_log
+#LoadPlugin write_mongodb
+#LoadPlugin write_prometheus
+#LoadPlugin write_redis
+#LoadPlugin write_riemann
+#LoadPlugin write_sensu
+#LoadPlugin write_tsdb
+#LoadPlugin xencpu
+#LoadPlugin zfs_arc
+#LoadPlugin zookeeper
+```
+
+Some of them needs additional configuration, for example:
+
+```bash
+<Plugin ethstat>
+        Interface "ens4"
+        Map "rx_csum_offload_errors" "if_rx_errors" "checksum_offload"
+        Map "multicast" "if_multicast"
+        MappedOnly false
+</Plugin>
+```
+Here `Interface "ens4"` is unique identifier, it depends on OS and you have to check for the correct interface name in your system.
+
+Some of them don't need additional configuration.
+
+#### PostgreSQL
+
+Check if your PostgreSQL server has monitoring enabled - https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS-SETUP  
+In order to perform some monitoring with CollectD, you need to enable plugin by uncommenting `LoadPlugin postgresql` in `/etc/collectd/collectd.conf` and configuring it.
+```bash
+#<Plugin postgresql>
+#       <Query magic>
+#               Statement "SELECT magic FROM wizard WHERE host = $1;"
+#               Param hostname
+#
+#               <Result>
+#                       Type gauge
+#                       InstancePrefix "magic"
+#                       ValuesFrom "magic"
+#               </Result>
+#       </Query>
+#
+#       <Query rt36_tickets>
+#               Statement "SELECT COUNT(type) AS count, type \
+#                                 FROM (SELECT CASE \
+#                                              WHEN resolved = 'epoch' THEN 'open' \
+#                                              ELSE 'resolved' END AS type \
+#                                              FROM tickets) type \
+#                                 GROUP BY type;"
+#
+#               <Result>
+#                       Type counter
+#                       InstancePrefix "rt36_tickets"
+#                       InstancesFrom "type"
+#                       ValuesFrom "count"
+#               </Result>
+#       </Query>
+#       <Writer sqlstore>
+#               # See /usr/share/doc/collectd-core/examples/postgresql/collectd_insert.sql for details
+#               Statement "SELECT collectd_insert($1, $2, $3, $4, $5, $6, $7, $8, $9);"
+#               StoreRates true
+#       </Writer>
+#
+#       <Database foo>
+#               #Plugin "kingdom"
+#               Host "hostname"
+#               Port 5432
+#               User "username"
+#               Password "secret"
+#
+#               SSLMode "prefer"
+#               KRBSrvName "kerberos_service_name"
+#
+#               Query magic
+#       </Database>
+#
+#       <Database bar>
+#               Interval 60
+#               Service "service_name"
+#
+#               Query backends # predefined
+#               Query rt36_tickets
+#       </Database>
+#
+#       <Database qux>
+#               Service "collectd_store"
+#               Writer sqlstore
+#               # see collectd.conf(5) for details
+#               CommitInterval 30
+#       </Database>
+#</Plugin>
+```
+
+This is an example config. Generally it is some SQL query, which is executed on the PostgreSQL server.  
+**But**, there is predifined queries, which you can use:
+
+```bash
+Query backends
+Query transactions
+Query queries
+Query queries_by_table
+Query queries_by_table
+Query query_plans
+Query table_states
+Query query_plans_by_table
+Query table_states_by_table
+Query disk_io
+Query disk_io_by_table
+Query disk_usage
+```
+
+The expressions for those queries are defined in `/usr/share/collectd/postgresql_default.conf` file.
+
+#### Nginx
+
+It is using **nginx_status** page.  
+First, check if your installation of Nginx has this module enabled:
+
+```bash
+nginx -V 2>&1 | grep -o with-http_stub_status_module
+```
+
+This should result in:
+```
+with-http_stub_status_module
+```
+Then create file
+
+```bash
+sudo nano /etc/nginx/sites-available/status
+```
+with this content:
+
+```
+server {
+  listen 80;
+  server_name 127.0.0.1;
+  location /nginx_status {
+    stub_status;
+    access_log off;
+    allow 127.0.0.1;
+    deny all;
+  }
+}
+```
+
+In `/etc/collectd/collectd.conf` add `LoadPlugin nginx` and configure it.
+
+```bash
+<Plugin nginx>
+        URL "http://127.0.0.1/nginx_status"
+</Plugin>
+```
+
+Create symlink
+
+```bash
+sudo ln -s /etc/nginx/sites-available/status /etc/nginx/sites-enabled/status
+```
+
+Reload nginx
+
+```bash
+sudo service nginx restart
+```
+
+To check this status page you can use `curl` command:
+
+```bash
+curl http://127.0.0.1/nginx_status
+```
+
+The output should look like this:
+
+```
+Active connections: 5
+server accepts handled requests
+ 2515 2515 29161
+Reading: 0 Writing: 3 Waiting: 2
+```
+
 ## Configuring Grafana Datasources
+
+### Graphite
 
 Go to “Configuration” and choose “Data Sources”. Then click “Add data source”. By default, Grafana supports Graphite, Prometheus, Open TSDB, and several other aggregators. If the standard plugins are not enough you can download the one you need.  
 Choose “Graphite” and configure data source settings:
@@ -606,3 +1083,110 @@ Choose “Graphite” and configure data source settings:
 
 Click on `Save & test` and you should get a success message.  
 ![](img/working.jpg)
+
+### GitHub
+
+Search for `github` in the search box and add it to your datasources.
+
+![](img/grafana_datasource_github.jpg)
+
+### PostgreSQL
+
+Search for `postgres` in the search box and add it to your datasources.
+
+![](img/grafana_datasource_postgres.jpg)
+
+Create user in DB with permissions mentioned in the bottom and fill nesessary fields.
+
+After that in `Explore` you can run any query from DB
+
+![](img/grafana_datasource_postgres_query.jpg)
+
+
+### AWS
+
+Create IAM user with next permissions:
+
+```bash
+AWSXrayReadOnlyAccess
+CloudWatchReadOnlyAccess
+AWSBillingReadOnlyAccess
+```
+Save it's credentials.  
+Add datasource **X-Ray** to your Grafana.
+
+![](img/grafana_datasource_x-ray.jpg)
+
+Add datasource **Amazon CloudWatch** to your Grafana.
+
+![](img/grafana_datasource_cloudwatch.jpg)
+
+## Configuring Grafana Dashboards
+
+https://grafana.com/grafana/dashboards/
+
+### Jenkins
+
+Jenkins will use Graphite datasource.  
+In Jenkins go to plugins and install plugins:
+```
+Metrics Graphite Reporting Plugin
+```
+
+Then in **Configure System** find `Graphite metrics reporting` and configure it.  
+![](img/jenkins_graphite.jpg)
+
+
+Go to https://grafana.com/grafana/dashboards/ and search `Jenkins` with datasourse of `Graphite`
+
+![](img/grafana_dashboard_jenkins.jpg)
+
+Open it and copy ID. Then in Grafana go to **+ - Import** and paste it.
+
+![](img/grafana_dashboard_jenkins_import1.jpg)
+
+![](img/grafana_dashboard_jenkins_import2.jpg)
+
+Then you can create dashboard as this:
+
+![](img/grafana_dashboard_jenkins_working.jpg)
+
+> **Note**: Jenkins will not send any data untill it runs some job. So you need to run any job in Jenkins in order to get some data for dashboard, and after that it will be working.
+
+### Carbon
+
+From the same way you can add dashboard for Carbon.
+
+![](img/grafana_dashboard_carbon.jpg)
+
+### Collectd
+
+![](img/grafana_dashboard_collectd.jpg)
+
+> **Note**: Here comes the settings **prefix** in configuration file of CollectD. It must be exatcly the same as was given previously in order to work with this dashboard with default settings.
+
+### GitHub
+
+![](img/grafana_dashboard_github.jpg)
+
+### AWS
+
+We can add `AWS EC2` and `AWS ELB Application Load Balancer` to the dashboard.
+![](img/grafana_dashboard_alb.jpg)
+> **Note:** If you don't have any EC2 instances at this moment, EC2 dashboard will not work.
+
+### Custom
+
+You can create your own dashboards. Here, for example, dashboard for db size monitoring
+![](img/grafana_dashboard_psql.jpg)
+
+## Alerting to Slack
+
+There is [nice](https://www.clever-cloud.com/blog/features/2021/12/03/slack-alerts-for-grafana/) guide.
+As a result, you can create something like this:
+
+![](img/grafana_alerts.jpg)  
+
+And panel in Grafana with alerts status:
+
+![](img/grafana_alerts_paner.jpg) 
