@@ -136,8 +136,9 @@ CMD ["/usr/bin/supervisord"]
 ```
 
 ```bash
-docker build . -t supervisored_geocitizen
+DOCKER_BUILDKIT=1 docker build . -t supervisored_geocitizen
 ```
+> **Note!** In order to build container, [BUILDKIT](https://docs.docker.com/develop/develop-images/build_enhancements/) is required.
 
 ![](img/docker_buildkit.jpg)
 
